@@ -1,0 +1,2453 @@
+<!-- Chosen Palette: Minimalist Neutral Warm (#F6F4EF) & Coral Orange Accent (#FF5A36) -->
+<!-- Application Structure Plan: Single-page portfolio structured into 6 thematic sections: Hero, Experience, Photography, Skills, Education, and Contact. Interactive Experience cards open a strict 4-slide horizontal carousel modal (Bento KPIs, Case links, Growth trends, Gantt/SOP schedules) without vertical scrollbars. Photography features a full-view lightbox. Includes interactive 3-layer custom cursor, click edit markers, and smooth Lenis scrolling. -->
+<!-- Visualization & Content Choices: Key metric highlights displayed via animated Bento numbers; Gantt charts and process flows generated with styled HTML/CSS grid structures; Performance optimizations enforce GPU translate3d acceleration, ticker loop consolidation, and no back-drop blurs. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xinxin Zhang | Growth & Operations Portfolio</title>
+  <meta name="description" content="Growth operator portfolio focused on content growth, user acquisition, creator marketing, and cross-functional project execution for brands and teams.">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="Xinxin Zhang | Growth & Operations Portfolio">
+  <meta property="og:description" content="Growth strategy · Content growth · User acquisition · Project operations">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts Preconnect & Stylesheet -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- GSAP & Lenis CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       01. Reset & Global Variables
+       ========================================================================== */
+    :root {
+      --bg: #F6F4EF;
+      --text-main: #111111;
+      --text-muted: #666666;
+      --text-light: #999999;
+      --primary: #FF5A36;
+      --accent-green: #C7FF4A;
+      --line: rgba(0, 0, 0, 0.08);
+      --surface: #FFFFFF;
+      --font-display: 'Playfair Display', serif;
+      --font-sans: 'Inter', 'Noto Sans SC', sans-serif;
+      --font-num: 'Space Grotesk', sans-serif;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 16px;
+      background-color: var(--bg);
+      color: var(--text-main);
+      scroll-behavior: initial;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      line-height: 1.75;
+      background-color: var(--bg);
+      color: var(--text-main);
+      overflow-x: hidden;
+      position: relative;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* 网格背景 */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: 
+        linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.02) 1px, transparent 1px);
+      background-size: 80px 80px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    /* ==========================================================================
+       02. Cursor & Click Marker (Desktop Only)
+       ========================================================================== */
+    .cursor-core, .cursor-circle, .cursor-glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      border-radius: 50%;
+      z-index: 9999;
+      transform: translate3d(-50%, -50%, 0);
+      display: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .cursor-core, .cursor-circle, .cursor-glow {
+        display: block;
+      }
+    }
+
+    .cursor-core {
+      width: 6px;
+      height: 6px;
+      background-color: var(--primary);
+      transition: width 0.25s var(--ease-out), height 0.25s var(--ease-out), background-color 0.25s ease;
+    }
+
+    .cursor-circle {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--primary);
+      background-color: transparent;
+      transition: width 0.25s var(--ease-out), height 0.25s var(--ease-out), background-color 0.25s ease, border-color 0.25s ease;
+    }
+
+    .cursor-glow {
+      width: 60px;
+      height: 60px;
+      background: radial-gradient(circle, rgba(255, 90, 54, 0.15) 0%, rgba(255, 90, 54, 0) 70%);
+    }
+
+    /* 光标互动状态 */
+    .cursor-hover .cursor-core {
+      width: 10px;
+      height: 10px;
+    }
+    .cursor-hover .cursor-circle {
+      width: 56px;
+      height: 56px;
+      background-color: rgba(255, 90, 54, 0.08);
+      border-color: rgba(255, 90, 54, 0.5);
+    }
+    .cursor-down .cursor-circle {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* 编辑标记 */
+    .edit-marker {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      width: 24px;
+      height: 24px;
+      transform: translate(-50%, -50%);
+    }
+    .edit-marker::before, .edit-marker::after {
+      content: "";
+      position: absolute;
+      background: var(--primary);
+    }
+    .edit-marker::before {
+      top: 11px;
+      left: 0;
+      width: 24px;
+      height: 1px;
+    }
+    .edit-marker::after {
+      top: 0;
+      left: 11px;
+      width: 1px;
+      height: 24px;
+    }
+    .edit-marker-dot {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 4px;
+      height: 4px;
+      background: var(--primary);
+      border-radius: 50%;
+    }
+
+    /* ==========================================================================
+       03. Header & Navigation & Progress
+       ========================================================================== */
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: var(--primary);
+      width: 0%;
+      z-index: 10000;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 24px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+      mix-blend-mode: normal;
+    }
+
+    .brand-mark {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 32px;
+      align-items: center;
+    }
+
+    nav a {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: color 0.25s ease;
+      position: relative;
+    }
+
+    nav a:hover, nav a.active {
+      color: var(--primary);
+    }
+
+    /* ==========================================================================
+       04. Layout & Typography
+       ========================================================================== */
+    .container {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 48px;
+      position: relative;
+      z-index: 1;
+    }
+
+    section {
+      padding: 120px 0;
+      position: relative;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+      margin-bottom: 56px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 24px;
+    }
+
+    .section-title-en {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .section-divider {
+      color: var(--line);
+      font-weight: 300;
+    }
+
+    .section-title-cn {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ==========================================================================
+       05. Section 01: Hero
+       ========================================================================== */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 0 48px;
+      position: relative;
+    }
+
+    .hero-title-wrap {
+      margin-bottom: 24px;
+      cursor: default;
+    }
+
+    .hero-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(4rem, 10vw, 8rem);
+      letter-spacing: -0.03em;
+      line-height: 0.95;
+      color: var(--text-main);
+      display: inline-flex;
+      user-select: none;
+      transform: translate3d(0,0,0);
+    }
+
+    .hero-letter {
+      display: inline-block;
+      transition: transform 0.25s ease, color 0.25s ease;
+    }
+
+    .hero-title-wrap:hover .hero-letter {
+      animation: letterJump 0.4s ease forwards;
+    }
+
+    .hero-title-wrap .hero-letter:nth-child(1) { animation-delay: 0.00s; }
+    .hero-title-wrap .hero-letter:nth-child(2) { animation-delay: 0.03s; }
+    .hero-title-wrap .hero-letter:nth-child(3) { animation-delay: 0.06s; }
+    .hero-title-wrap .hero-letter:nth-child(4) { animation-delay: 0.09s; }
+    .hero-title-wrap .hero-letter:nth-child(5) { animation-delay: 0.12s; }
+    .hero-title-wrap .hero-letter:nth-child(6) { animation-delay: 0.15s; }
+    .hero-title-wrap .hero-letter:nth-child(7) { animation-delay: 0.18s; }
+    .hero-title-wrap .hero-letter:nth-child(8) { animation-delay: 0.21s; }
+    .hero-title-wrap .hero-letter:nth-child(9) { animation-delay: 0.24s; }
+    .hero-title-wrap .hero-letter:nth-child(10) { animation-delay: 0.27s; }
+    .hero-title-wrap .hero-letter:nth-child(11) { animation-delay: 0.30s; }
+    .hero-title-wrap .hero-letter:nth-child(12) { animation-delay: 0.33s; }
+
+    @keyframes letterJump {
+      0% { transform: translateY(0); color: var(--text-main); }
+      50% { transform: translateY(-4px); color: var(--primary); }
+      100% { transform: translateY(0); color: var(--text-main); }
+    }
+
+    .hero-letter:hover {
+      color: var(--primary) !important;
+      transform: scale(1.05) !important;
+    }
+
+    .hero-slogan {
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      letter-spacing: 0.02em;
+    }
+
+    .hero-contact-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .hero-value-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 16px;
+      width: min(700px, 100%);
+      margin: 0 auto 48px;
+    }
+
+    .hero-value-card {
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px 16px;
+      text-align: left;
+      box-shadow: 0 10px 40px rgba(17, 17, 17, 0.02);
+    }
+
+    .hero-value-card .label {
+      display: inline-block;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 8px;
+    }
+
+    .hero-value-card .metric {
+      font-family: var(--font-num);
+      font-size: clamp(1.6rem, 2vw, 2.2rem);
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .hero-value-card .desc {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .contact-link-item {
+      position: relative;
+      font-size: 0.9375rem;
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.3s ease;
+    }
+
+    .contact-link-item::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -2px;
+      width: 0;
+      height: 1px;
+      background: var(--primary);
+      transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .contact-link-item:hover {
+      color: var(--primary);
+    }
+
+    .contact-link-item:hover::after {
+      width: 100%;
+      left: 0;
+    }
+
+    .btn-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--text-main);
+      transition: all 0.3s ease;
+      background: transparent;
+    }
+
+    .btn-copy:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--bg);
+    }
+
+    .btn-copy.copied {
+      background: var(--accent-green) !important;
+      border-color: var(--accent-green) !important;
+      color: #111111 !important;
+    }
+
+    .hero-scroll-hint {
+      position: absolute;
+      bottom: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: var(--text-light);
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: color 0.3s ease;
+    }
+
+    .hero-scroll-hint span {
+      display: block;
+    }
+
+    .hero-scroll-hint::after {
+      content: "";
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,90,54,0.15) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    .hero-scroll-hint:hover {
+      color: var(--primary);
+    }
+
+    .hero-scroll-hint:hover::after {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* ==========================================================================
+       06. Section 02: Experience (Grid Cards)
+       ========================================================================== */
+    .experience-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .exp-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 32px;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 280px;
+      will-change: transform;
+    }
+
+    .exp-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 90, 54, 0.3);
+    }
+
+    .exp-card-header {
+      margin-bottom: 24px;
+    }
+
+    .exp-time {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .exp-company {
+      font-family: var(--font-sans);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .exp-role {
+      font-size: 0.9375rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .exp-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.03);
+      padding: 6px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .tag.highlight {
+      background: rgba(255, 90, 54, 0.08);
+      color: var(--primary);
+    }
+
+    /* ==========================================================================
+       07. Section 03: Photography (Strict Contain & Full View)
+       ========================================================================== */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+    }
+
+    .photo-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .photo-img-wrap {
+      width: 100%;
+      height: 480px;
+      background: var(--bg);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .photo-img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      will-change: transform, opacity, filter;
+      opacity: 0;
+      filter: blur(6px);
+      transform: translateY(12px) translate3d(0,0,0);
+      transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s var(--ease-out);
+    }
+
+    .photo-img.loaded {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0) translate3d(0,0,0);
+    }
+
+    .photo-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0 4px;
+    }
+
+    .photo-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-style: italic;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .photo-location {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ==========================================================================
+       08. Section 04: Skills
+       ========================================================================== */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .skill-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 32px;
+    }
+
+    .skill-category-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .skill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* ==========================================================================
+       09. Section 05: Education
+       ========================================================================== */
+    .edu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .edu-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 220px;
+    }
+
+    .edu-school {
+      font-family: var(--font-sans);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .edu-major {
+      font-size: 0.9375rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .edu-time {
+      font-size: 0.8125rem;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    .edu-tags-area {
+      margin-top: 16px;
+    }
+
+    .tag-award {
+      background: rgba(199, 255, 74, 0.3);
+      color: #111111;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    /* ==========================================================================
+       10. Section 06: Contact & Footer
+       ========================================================================== */
+    #contact {
+      text-align: center;
+      padding-bottom: 80px;
+    }
+
+    .contact-container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .contact-name {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 32px;
+    }
+
+    .contact-box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 40px;
+      margin-bottom: 48px;
+    }
+
+    .btn-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border: 1px solid var(--line);
+      padding: 10px 20px;
+      border-radius: 999px;
+      transition: all 0.3s ease;
+      margin-bottom: 48px;
+    }
+
+    .btn-top:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .footer-copy {
+      font-size: 0.8125rem;
+      color: var(--text-light);
+    }
+
+    /* ==========================================================================
+       11. Modal Carousel (Horizontal Only - NO VERTICAL SCROLL)
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(246, 244, 239, 0.95); /* 严禁 backdrop-filter */
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-wrapper {
+      width: 90%;
+      max-width: 1100px;
+      height: 85vh;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transform: scale(0.95) translate3d(0, 0, 0);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-wrapper {
+      transform: scale(1) translate3d(0, 0, 0);
+    }
+
+    .modal-header {
+      padding: 24px 32px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .modal-title-group h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .modal-title-group p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .modal-close-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+      font-size: 1.125rem;
+      transition: all 0.25s ease;
+    }
+
+    .modal-close-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #FFF;
+    }
+
+    .modal-carousel-stage {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .carousel-track {
+      display: flex;
+      width: 400%;
+      height: 100%;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    }
+
+    .carousel-slide {
+      width: 25%;
+      height: 100%;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .slide-heading {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slide-heading::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 14px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    /* Modal Bento Grid (Slide 1) */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: 1fr;
+      gap: 16px;
+      height: 100%;
+    }
+
+    .bento-card {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .bento-card.col-2 {
+      grid-column: span 2;
+    }
+
+    .bento-num-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .bento-num {
+      font-family: var(--font-num);
+      font-size: 2.75rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text-main);
+    }
+
+    .bento-unit {
+      font-family: var(--font-sans);
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .bento-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-light);
+    }
+
+    .bento-desc {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Slide 2: Case Cards Horizontal Array */
+    .cases-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      height: 100%;
+    }
+
+    .case-card {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .case-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      padding: 4px 8px;
+      background: rgba(0,0,0,0.06);
+      border-radius: 6px;
+      width: fit-content;
+      margin-bottom: 12px;
+    }
+
+    .case-name {
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .case-detail {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .case-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--text-main);
+      color: #FFF;
+      border-radius: 999px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      transition: background 0.25s ease;
+    }
+
+    .case-btn:hover {
+      background: var(--primary);
+    }
+
+    /* Slide 3: Chart & Dynamic Trend */
+    .chart-container {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+      height: 100%;
+      align-items: center;
+    }
+
+    .chart-box {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 28px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .chart-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .action-item {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .action-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .action-desc {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    /* Slide 4: Gantt / Timeline / SOP */
+    .gantt-container {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .gantt-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .gantt-role-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .gantt-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .gantt-bar-item {
+      background: rgba(0,0,0,0.04);
+      border-left: 3px solid var(--primary);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .gantt-bar-item span:first-child {
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    /* Modal Navigation Footer */
+    .modal-footer {
+      padding: 16px 32px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .modal-nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-arrow-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+      font-weight: 600;
+    }
+
+    .nav-arrow-btn:hover:not(:disabled) {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #FFF;
+    }
+
+    .nav-arrow-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .modal-page-num {
+      font-family: var(--font-num);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .modal-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .modal-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--line);
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+    .modal-dot.active {
+      background: var(--primary);
+      transform: scale(1.3);
+    }
+
+    /* ==========================================================================
+       12. Lightbox (Strict Contain & Full View)
+       ========================================================================== */
+    .lightbox-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(246, 244, 239, 0.95);
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .lightbox-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .lightbox-content {
+      max-width: 90vw;
+      max-height: 85vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .lightbox-img {
+      max-width: 85vw;
+      max-height: 75vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .lightbox-caption {
+      margin-top: 16px;
+      display: flex;
+      gap: 16px;
+      align-items: baseline;
+    }
+
+    .lightbox-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-style: italic;
+    }
+
+    .lightbox-loc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 1.25rem;
+    }
+
+    .lightbox-close:hover {
+      background: var(--primary);
+      color: #FFF;
+      border-color: var(--primary);
+    }
+
+    /* ==========================================================================
+       13. Accessibility & Mobile Responsive
+       ========================================================================== */
+    @media (max-width: 1024px) {
+      header {
+        padding: 20px 24px;
+      }
+      .container {
+        padding: 0 24px;
+      }
+      section {
+        padding: 80px 0;
+      }
+      .photo-grid {
+        grid-template-columns: 1fr;
+      }
+      .photo-img-wrap {
+        height: 380px;
+      }
+      .cases-row {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+      }
+      .bento-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .chart-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header nav {
+        display: none;
+      }
+      .hero-contact-row {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .modal-wrapper {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+      }
+      .bento-grid {
+        grid-template-columns: 1fr;
+      }
+      .bento-card.col-2 {
+        grid-column: span 1;
+      }
+      .gantt-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .hero-title-wrap:hover .hero-letter {
+        animation: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .photo-img {
+        filter: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="progress-bar" id="progressBar" aria-hidden="true"></div>
+
+  <!-- Orange 3-Layer Custom Cursor (Desktop Only) -->
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+  <div class="cursor-circle" id="cursorCircle" aria-hidden="true"></div>
+  <div class="cursor-core" id="cursorCore" aria-hidden="true"></div>
+
+  <!-- Header -->
+  <header>
+    <a href="#hero" class="brand-mark">XZ</a>
+    <nav>
+      <ul>
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#photography">Photography</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#education">Education</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+
+    <!-- 01 Hero Section -->
+    <section id="hero">
+      <div class="hero-title-wrap" id="heroNameWrap">
+        <h1 class="hero-name" aria-label="Xinxin Zhang">
+          <span class="hero-letter">X</span>
+          <span class="hero-letter">i</span>
+          <span class="hero-letter">n</span>
+          <span class="hero-letter">x</span>
+          <span class="hero-letter">i</span>
+          <span class="hero-letter">n</span>
+          <span class="hero-letter">&nbsp;</span>
+          <span class="hero-letter">Z</span>
+          <span class="hero-letter">h</span>
+          <span class="hero-letter">a</span>
+          <span class="hero-letter">n</span>
+          <span class="hero-letter">g</span>
+        </h1>
+      </div>
+
+      <p class="hero-slogan" id="heroSlogan">Growth Operator | Content Growth · User Acquisition · Project Execution</p>
+
+      <div class="hero-contact-row" id="heroContact">
+        <a href="tel:+8615366697351" class="contact-link-item">+86 15366697351</a>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <a href="mailto:xxinzhang2026@163.com" class="contact-link-item">xxinzhang2026@163.com</a>
+          <button class="btn-copy" id="btnCopyEmail" aria-label="复制邮箱">
+            <span>复制</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-value-grid" aria-label="Key performance highlights">
+        <div class="hero-value-card">
+          <span class="label">Organic reach</span>
+          <div class="metric">33.7W+</div>
+          <div class="desc">Natural views on high-converting short-form content</div>
+        </div>
+        <div class="hero-value-card">
+          <span class="label">CTR</span>
+          <div class="metric">5.1%</div>
+          <div class="desc">Shopping cart click-through on live content testing</div>
+        </div>
+        <div class="hero-value-card">
+          <span class="label">Efficiency</span>
+          <div class="metric">40%</div>
+          <div class="desc">Workflow uplift through structured AIGC production</div>
+        </div>
+      </div>
+
+      <a href="#experience" class="hero-scroll-hint" aria-label="向下滚动查看经历">
+        <span>SCROLL</span>
+        <div style="font-size: 1rem;">↓</div>
+      </a>
+    </section>
+
+    <!-- 02 Experience Section -->
+    <section id="experience">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title-en">01 Experience</h2>
+          <span class="section-divider">—</span>
+          <span class="section-title-cn">工作经历</span>
+        </div>
+
+        <div class="experience-grid">
+          <!-- Card 1: Mesoo Digital Ltd -->
+          <div class="exp-card" data-exp="0">
+            <div class="exp-card-header">
+              <div class="exp-time">2026.03–2026.06</div>
+              <h3 class="exp-company">Mesoo Digital Ltd（英国曼彻斯特）</h3>
+              <p class="exp-role">内容增长运营实习生（TikTok 短视频方向）</p>
+            </div>
+            <div class="exp-tags">
+              <span class="tag highlight">33.7W+ 自然播放</span>
+              <span class="tag highlight">5.1% 购物车点击率</span>
+              <span class="tag">£1,034+ GMV</span>
+              <span class="tag">完播率 25% → 42%</span>
+            </div>
+          </div>
+
+          <!-- Card 2: 杭州青蓝汇创教育科技 -->
+          <div class="exp-card" data-exp="1">
+            <div class="exp-card-header">
+              <div class="exp-time">2023.10–2024.04</div>
+              <h3 class="exp-company">杭州青蓝汇创教育科技</h3>
+              <p class="exp-role">用户增长运营实习生</p>
+            </div>
+            <div class="exp-tags">
+              <span class="tag highlight">达成率 95%</span>
+              <span class="tag">M0-M3 宏观规划</span>
+              <span class="tag">3 岗协同拆解</span>
+              <span class="tag">100+ 种子用户</span>
+            </div>
+          </div>
+
+          <!-- Card 3: 母校行&高招志愿活动 -->
+          <div class="exp-card" data-exp="2">
+            <div class="exp-card-header">
+              <div class="exp-time">2021.12–2022.02</div>
+              <h3 class="exp-company">母校行&高招志愿活动</h3>
+              <p class="exp-role">用户增长运营（校园方向）</p>
+            </div>
+            <div class="exp-tags">
+              <span class="tag highlight">转化率 60%</span>
+              <span class="tag">到场率 75%</span>
+              <span class="tag">社群 300+</span>
+              <span class="tag">校级优秀二等奖</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 Photography Section -->
+    <section id="photography">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title-en">02 Portfolio</h2>
+          <span class="section-divider">—</span>
+          <span class="section-title-cn">作品与生活</span>
+        </div>
+
+        <div class="photo-grid">
+          <!-- Photo 1 -->
+          <div class="photo-card" data-photo-idx="0">
+            <div class="photo-img-wrap">
+              <img class="photo-img" 
+                   src="https://raw.githubusercontent.com/xinxinzhang20030122-creator/my-images/main/images/image-2.jpg" 
+                   alt="Eiffel Tower" 
+                   loading="lazy" 
+                   decoding="async">
+            </div>
+            <div class="photo-meta">
+              <span class="photo-title">Eiffel Tower</span>
+              <span class="photo-location">法国巴黎</span>
+            </div>
+          </div>
+
+          <!-- Photo 2 -->
+          <div class="photo-card" data-photo-idx="1">
+            <div class="photo-img-wrap">
+              <img class="photo-img" 
+                   src="https://raw.githubusercontent.com/xinxinzhang20030122-creator/my-images/main/images/image-3.jpg" 
+                   alt="Disney Fireworks" 
+                   loading="lazy" 
+                   decoding="async">
+            </div>
+            <div class="photo-meta">
+              <span class="photo-title">Disney Fireworks</span>
+              <span class="photo-location">法国巴黎</span>
+            </div>
+          </div>
+
+          <!-- Photo 3 -->
+          <div class="photo-card" data-photo-idx="2">
+            <div class="photo-img-wrap">
+              <img class="photo-img" 
+                   src="https://raw.githubusercontent.com/xinxinzhang20030122-creator/my-images/main/images/image-4.jpg" 
+                   alt="Disney Light Show" 
+                   loading="lazy" 
+                   decoding="async">
+            </div>
+            <div class="photo-meta">
+              <span class="photo-title">Disney Light Show</span>
+              <span class="photo-location">法国巴黎</span>
+            </div>
+          </div>
+
+          <!-- Photo 4 -->
+          <div class="photo-card" data-photo-idx="3">
+            <div class="photo-img-wrap">
+              <img class="photo-img" 
+                   src="https://raw.githubusercontent.com/xinxinzhang20030122-creator/my-images/main/images/image-5.jpg" 
+                   alt="Disney Castle" 
+                   loading="lazy" 
+                   decoding="async">
+            </div>
+            <div class="photo-meta">
+              <span class="photo-title">Disney Castle</span>
+              <span class="photo-location">法国巴黎</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 Skills Section -->
+    <section id="skills">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title-en">03 Capabilities</h2>
+          <span class="section-divider">—</span>
+          <span class="section-title-cn">核心能力</span>
+        </div>
+
+        <div class="skills-grid">
+          <div class="skill-card">
+            <h3 class="skill-category-title">运营能力</h3>
+            <div class="skill-list">
+              <span class="tag">内容运营</span>
+              <span class="tag">用户增长</span>
+              <span class="tag">社群运营</span>
+              <span class="tag">项目管理</span>
+              <span class="tag">数据复盘</span>
+              <span class="tag">AARRR 模型</span>
+              <span class="tag">竞品分析</span>
+              <span class="tag">用户调研</span>
+            </div>
+          </div>
+
+          <div class="skill-card">
+            <h3 class="skill-category-title">内容与设计</h3>
+            <div class="skill-list">
+              <span class="tag">短视频策划</span>
+              <span class="tag">脚本撰写</span>
+              <span class="tag">剪映</span>
+              <span class="tag">ChatGPT/Kimi/Gemini</span>
+              <span class="tag">Prompt 工程</span>
+              <span class="tag">AIGC 内容生产</span>
+            </div>
+          </div>
+
+          <div class="skill-card">
+            <h3 class="skill-category-title">数据与工具</h3>
+            <div class="skill-list">
+              <span class="tag">Excel 数据透视表</span>
+              <span class="tag">CTR/完播率/GMV 分析</span>
+              <span class="tag">Xmind</span>
+              <span class="tag">Axure</span>
+              <span class="tag">PS</span>
+            </div>
+          </div>
+
+          <div class="skill-card">
+            <h3 class="skill-category-title">语言</h3>
+            <div class="skill-list">
+              <span class="tag">中文（母语）</span>
+              <span class="tag">英文（全英文授课，可工作沟通）</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 Education Section -->
+    <section id="education">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title-en">04 Education</h2>
+          <span class="section-divider">—</span>
+          <span class="section-title-cn">教育背景</span>
+        </div>
+
+        <div class="edu-grid">
+          <div class="edu-card">
+            <div>
+              <h3 class="edu-school">曼彻斯特大学</h3>
+              <p class="edu-major">商业项目管理 | 硕士</p>
+            </div>
+            <div class="edu-time">2026.12 毕业（27 届应届生）</div>
+          </div>
+
+          <div class="edu-card">
+            <div>
+              <h3 class="edu-school">西交利物浦大学</h3>
+              <p class="edu-major">人力资源管理 | 本科（全英文授课）</p>
+              <div class="edu-tags-area">
+                <span class="tag-award">校级优秀二等奖</span>
+              </div>
+            </div>
+            <div class="edu-time">2021.09–2025.07</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 Contact Section -->
+    <section id="contact">
+      <div class="container contact-container">
+        <div class="section-header" style="justify-content: center;">
+          <h2 class="section-title-en">05 Contact</h2>
+          <span class="section-divider">—</span>
+          <span class="section-title-cn">联系信息</span>
+        </div>
+
+        <h3 class="contact-name">Xinxin Zhang</h3>
+
+        <div class="contact-box">
+          <div class="hero-contact-row" style="margin-bottom: 0;">
+            <a href="tel:+8615366697351" class="contact-link-item">+86 15366697351</a>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <a href="mailto:xxinzhang2026@163.com" class="contact-link-item">xxinzhang2026@163.com</a>
+              <button class="btn-copy" id="btnCopyEmail2" aria-label="复制邮箱">
+                <span>复制</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-top" id="btnBackToTop">
+          <span>↑ Back to Top</span>
+        </button>
+
+        <p class="footer-copy">© 2026 Xinxin Zhang</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Experience Modal (Pure Horizontal Carousel) -->
+  <div class="modal-overlay" id="expModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-wrapper">
+      
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 id="modalCompany">Company Name</h3>
+          <p id="modalRole">Role Title</p>
+        </div>
+        <button class="modal-close-btn" id="modalCloseBtn" aria-label="关闭窗口">✕</button>
+      </div>
+
+      <!-- Carousel Stage (Horizontal Slider) -->
+      <div class="modal-carousel-stage">
+        <div class="carousel-track" id="modalTrack">
+          <!-- Slide 1: Bento Overview -->
+          <div class="carousel-slide" id="slide1"></div>
+          <!-- Slide 2: Cases -->
+          <div class="carousel-slide" id="slide2"></div>
+          <!-- Slide 3: Growth Trends -->
+          <div class="carousel-slide" id="slide3"></div>
+          <!-- Slide 4: Gantt / SOP -->
+          <div class="carousel-slide" id="slide4"></div>
+        </div>
+      </div>
+
+      <!-- Modal Navigation Footer -->
+      <div class="modal-footer">
+        <div class="modal-dots" id="modalDots">
+          <span class="modal-dot active"></span>
+          <span class="modal-dot"></span>
+          <span class="modal-dot"></span>
+          <span class="modal-dot"></span>
+        </div>
+        <div class="modal-nav-controls">
+          <button class="nav-arrow-btn" id="modalPrevBtn" aria-label="上一页">←</button>
+          <span class="modal-page-num" id="modalPageNum">01 / 04</span>
+          <button class="nav-arrow-btn" id="modalNextBtn" aria-label="下一页">→</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox-overlay" id="lightboxModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <button class="lightbox-close" id="lightboxCloseBtn" aria-label="关闭大图">✕</button>
+    <div class="lightbox-content">
+      <img src="" alt="" class="lightbox-img" id="lightboxImg">
+      <div class="lightbox-caption">
+        <span class="lightbox-title" id="lightboxTitle"></span>
+        <span class="lightbox-loc" id="lightboxLoc"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    /**
+     * Experience Data Model
+     */
+    const experiencesData = [
+      {
+        company: "Mesoo Digital Ltd（英国曼彻斯特）",
+        role: "内容增长运营实习生（TikTok 短视频方向）",
+        time: "2026.03–2026.06",
+        slides: {
+          bento: [
+            { num: 33.7, unit: "W+", label: "自然播放量", desc: "单条短视频爆发数据", col: "col-2" },
+            { num: 5.1, unit: "%", label: "购物车 CTR", desc: "行业均值 1–2%", col: "col-2" },
+            { num: 1034, unit: "£+", label: "转化 GMV", desc: "单条自然视频直接转化", col: "col-2" },
+            { num: 40, unit: "%", label: "平均播放提升", desc: "账号整体流量池突破", col: "col-2" },
+            { num: 25, unit: "+", label: "日均稳定输出", desc: "双账号月均 750+ 条", col: "col-2" },
+            { num: 40, unit: "%", label: "生产效率提升", desc: "标准化 AIGC 生产流程", col: "col-2" }
+          ],
+          cases: [
+            {
+              platform: "TikTok",
+              name: "@shopwithlora",
+              desc: "TikTok 爆款短视频带货转化案例，精准抓住前 3 秒痛点，单条播放突破 33.7W+，购物车点击率 5.1%。",
+              link: "https://www.tiktok.com/@shopwithlora/video/7620102342930713878"
+            },
+            {
+              platform: "TikTok",
+              name: "@glowup_forever 案例1",
+              desc: "围绕目标受众审美打造高粘性内容，通过完播率优化模型使自然流量阶梯式跃迁。",
+              link: "https://www.tiktok.com/@glowup_forever/video/7616450435309702422"
+            },
+            {
+              platform: "TikTok",
+              name: "@glowup_forever 案例2",
+              desc: "深度拆解高转化脚本结构，结合商品落地页口播引导，实现流量与带货双轮驱动。",
+              link: "https://www.tiktok.com/@glowup_forever/video/7613353635958836502"
+            }
+          ],
+          chart: {
+            title: "完播率阶梯上升曲线",
+            stat1: "25%",
+            stat2: "42%",
+            actions: [
+              { title: "优化前 3 秒钩子 (Hook)", desc: "重构开头视听觉冲突，有效抑制前 3 秒流失。" },
+              { title: "优化口播引导 (CTA)", desc: "设置悬念与互动埋点，提升中后程留存。" },
+              { title: "优化落地页跳转", desc: "配合购物车卡片浮现时机，提升转化率。" }
+            ]
+          },
+          sop: {
+            title: "短视频流水线生产 SOP",
+            items: [
+              { role: "选题脚本", task: "热点捕获与痛点剧本，日均产出 25+ 脚本方案" },
+              { role: "AIGC 生产", task: "Prompt 工程辅助批量剪辑与画质渲染，效率提升 40%" },
+              { role: "数据复盘", task: "20+ 组留存曲线复盘，根据完播率持续迭代钩子" }
+            ]
+          }
+        }
+      },
+      {
+        company: "杭州青蓝汇创教育科技",
+        role: "用户增长运营实习生",
+        time: "2023.10–2024.04",
+        slides: {
+          bento: [
+            { num: 5, unit: "份", label: "分层运营方案", desc: "精细化人群策略", col: "col-2" },
+            { num: 95, unit: "%", label: "验收达成率", desc: "2 个百人级项目保质交付", col: "col-2" },
+            { num: 30, unit: "+", label: "高粘求职内容", desc: "打造高粘性知识沉淀", col: "col-2" },
+            { num: 100, unit: "+", label: "种子用户", desc: "首批核心用户沉淀", col: "col-2" },
+            { num: 150, unit: "+", label: "样本与访谈", desc: "深度用户调研闭环", col: "col-2" },
+            { num: 4, unit: "款", label: "竞品深度拆解", desc: "沉淀 3 大核心增长策略", col: "col-2" }
+          ],
+          cases: [
+            {
+              platform: "项目",
+              name: "百人级训练营",
+              desc: "负责 M0-M3 宏观运营规划，覆盖 6 大核心模块，全流程把控用户生命周期体验与转化闭环。",
+              link: "#"
+            },
+            {
+              platform: "调研",
+              name: "150+ 用户样本深度挖掘",
+              desc: "通过精准问卷与深度访谈梳理核心需求图谱，直接反哺 5 份精细化分层运营方案落地。",
+              link: "#"
+            },
+            {
+              platform: "内容",
+              name: "求职内容增长矩阵",
+              desc: "围绕高频痛点规划 30+ 篇干货内容，配合社群共读机制，实现社群日活与留存率显著提升。",
+              link: "#"
+            }
+          ],
+          chart: {
+            title: "用户生命周期留存提升",
+            stat1: "入营 100+",
+            stat2: "达成率 95%",
+            actions: [
+              { title: "分层运营策略", desc: "根据用户求职阶段提供差异化辅导支持。" },
+              { title: "多维社群打卡机制", desc: "引入同行互评与荣誉徽章，维持高频互动。" },
+              { title: "1v1 关键节点跟进", desc: "针对沉默用户实施定向触达与答疑支持。" }
+            ]
+          },
+          sop: {
+            title: "跨岗位协同排期（甘特图）",
+            gantt: [
+              { role: "活动推广岗", bars: ["9.19-10.08（8天）策划推广方案", "10.09-10.16（8天）定向邀约"] },
+              { role: "产品设计岗", bars: ["9.19-10.08（8天）设计辩题方案", "10.09-10.21（13天）运营与人员计划", "10.24-10.26（3天）优化辩题方案"] },
+              { role: "组织运营岗", bars: ["9.19-9.20（2天）制定运作计划", "9.21-10.09（5天）策划群破冰", "10.10-10.20（11天）解疑研究", "10.21-10.25（5天）进营前准备"] }
+            ]
+          }
+        }
+      },
+      {
+        company: "母校行&高招志愿活动",
+        role: "用户增长运营（校园方向）",
+        time: "2021.12–2022.02",
+        slides: {
+          bento: [
+            { num: 85, unit: "%+", label: "问卷回收率", desc: "发放 100+，回收 85+", col: "col-2" },
+            { num: 75, unit: "%", label: "宣讲到场率", desc: "预约 200+，参会 150+", col: "col-2" },
+            { num: 60, unit: "%", label: "最终转化率", desc: "高意向 50+，转化 30 人", col: "col-2" },
+            { num: 300, unit: "+", label: "社群规模", desc: "日均消息 50+，答疑 300+", col: "col-2" },
+            { num: 2000, unit: "+", label: "视频播放", desc: "线下海报张贴 30+ 张", col: "col-2" },
+            { num: 90, unit: "%+", label: "满意度反馈", desc: "荣获校级优秀二等奖", col: "col-2" }
+          ],
+          cases: [
+            {
+              platform: "校园宣讲",
+              name: "线上线下联动宣讲会",
+              desc: "精准覆盖意向学子，预约量破 200+，实际参会 150+ 人，宣讲视频回放播放突破 2,000+。",
+              link: "#"
+            },
+            {
+              platform: "社群答疑",
+              name: "300+ 高招咨询社群",
+              desc: "日均答疑 50+ 条，累计响应 300+ 次疑问，有效解决考生志愿填报疑惑。",
+              link: "#"
+            },
+            {
+              platform: "裂变传播",
+              name: "多级裂变扩散体系",
+              desc: "设计母校故事接力海报，实现裂变转发 50+ 次，触达潜在受众 200+ 人。",
+              link: "#"
+            }
+          ],
+          chart: {
+            title: "志愿转化漏斗跃迁",
+            stat1: "意向 50+",
+            stat2: "转化 30 人",
+            actions: [
+              { title: "全景宣讲破除信息差", desc: "系统化拆解专业前景与全英文教学优势。" },
+              { title: "学长学姐 1v1 答疑", desc: "针对高意向家长建立深度互信通道。" },
+              { title: "闭环回访追踪", desc: "最终促成 10+ 名学生将西浦列为高考第一志愿。" }
+            ]
+          },
+          sop: {
+            title: "活动闭环标准化流程",
+            items: [
+              { role: "前期蓄水", task: "精准问卷与意向摸排，锁定目标受众" },
+              { role: "现场转化", task: "主题宣讲配合现场互动，快速建立认同" },
+              { role: "长效沉淀", task: "社群答疑与志愿填报深度指导，实现最终转化" }
+            ]
+          }
+        }
+      }
+    ];
+
+    /**
+     * Photography Lightbox Data
+     */
+    const photoData = [
+      { title: "Eiffel Tower", loc: "法国巴黎", src: "https://raw.githubusercontent.com/xinxinzhang20030122-creator/my-images/main/images/image-2.jpg" },
+      { title: "Disney Fireworks", loc: "法国巴黎", src: "https://raw.githubusercontent.com/xinxinzhang20030122-creator/my-images/main/images/image-3.jpg" },
+      { title: "Disney Light Show", loc: "法国巴黎", src: "https://raw.githubusercontent.com/xinxinzhang20030122-creator/my-images/main/images/image-4.jpg" },
+      { title: "Disney Castle", loc: "法国巴黎", src: "https://raw.githubusercontent.com/xinxinzhang20030122-creator/my-images/main/images/image-5.jpg" }
+    ];
+
+    /**
+     * Performance & Smooth Scrolling System (Lenis + GSAP Sync)
+     */
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 2.0
+    });
+
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+    gsap.ticker.lagSmoothing(0);
+    lenis.on('scroll', ScrollTrigger.update);
+
+    window.addEventListener('scroll', () => {
+      const scrollTotal = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = scrollTotal > 0 ? (window.scrollY / scrollTotal) * 100 : 0;
+      document.getElementById('progressBar').style.width = progress + '%';
+    });
+
+    /**
+     * Cursor & Edit Markers
+     */
+    const cursorCore = document.getElementById('cursorCore');
+    const cursorCircle = document.getElementById('cursorCircle');
+    const cursorGlow = document.getElementById('cursorGlow');
+
+    let mouseX = -100, mouseY = -100;
+    let circleX = -100, circleY = -100;
+    let glowX = -100, glowY = -100;
+    let lastMouseX = -100, lastMouseY = -100;
+    let stopTimer = null;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+
+      const dx = mouseX - lastMouseX;
+      const dy = mouseY - lastMouseY;
+      const speed = Math.sqrt(dx * dx + dy * dy);
+      
+      if (speed > 10) {
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        cursorCore.style.transform = `translate3d(${mouseX - 3}px, ${mouseY - 3}px, 0) rotate(${angle}deg) scale(1.2, 0.8)`;
+      } else {
+        cursorCore.style.transform = `translate3d(${mouseX - 3}px, ${mouseY - 3}px, 0)`;
+      }
+
+      lastMouseX = mouseX;
+      lastMouseY = mouseY;
+
+      clearTimeout(stopTimer);
+      stopTimer = setTimeout(() => {
+        cursorCore.style.transform = `translate3d(${mouseX - 3}px, ${mouseY - 3}px, 0) scale(1, 1)`;
+      }, 100);
+    });
+
+    gsap.ticker.add(() => {
+      circleX += (mouseX - circleX) * 0.18;
+      circleY += (mouseY - circleY) * 0.18;
+      cursorCircle.style.transform = `translate3d(${circleX - 16}px, ${circleY - 16}px, 0)`;
+
+      glowX += (mouseX - glowX) * 0.10;
+      glowY += (mouseY - glowY) * 0.10;
+      cursorGlow.style.transform = `translate3d(${glowX - 30}px, ${glowY - 30}px, 0)`;
+    });
+
+    const clickableElements = 'a, button, .exp-card, .photo-card';
+    document.querySelectorAll(clickableElements).forEach(el => {
+      el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+      el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+    });
+
+    window.addEventListener('mousedown', () => document.body.classList.add('cursor-down'));
+    window.addEventListener('mouseup', () => document.body.classList.remove('cursor-down'));
+
+    window.addEventListener('click', (e) => createEditMarker(e.clientX, e.clientY));
+
+    function createEditMarker(x, y) {
+      const marker = document.createElement('div');
+      marker.className = 'edit-marker';
+      marker.style.left = x + 'px';
+      marker.style.top = y + 'px';
+
+      const dot = document.createElement('div');
+      dot.className = 'edit-marker-dot';
+      marker.appendChild(dot);
+      document.body.appendChild(marker);
+
+      gsap.fromTo(marker, 
+        { scale: 0.6, opacity: 0 },
+        { 
+          scale: 1, 
+          opacity: 1, 
+          duration: 0.2, 
+          ease: "power2.out",
+          onComplete: () => {
+            gsap.to(marker, {
+              scale: 1.1,
+              opacity: 0,
+              duration: 0.2,
+              ease: "power2.in",
+              onComplete: () => marker.remove()
+            });
+          }
+        }
+      );
+    }
+
+    /**
+     * Hero Animations & Copy Email
+     */
+    gsap.to("#heroNameWrap", {
+      y: -80,
+      scale: 0.92,
+      opacity: 0,
+      ease: "none",
+      scrollTrigger: {
+        trigger: "#hero",
+        start: "top top",
+        end: "60% top",
+        scrub: 1
+      }
+    });
+
+    gsap.to(["#heroSlogan", "#heroContact"], {
+      opacity: 0,
+      y: -40,
+      ease: "none",
+      scrollTrigger: {
+        trigger: "#hero",
+        start: "top top",
+        end: "35% top",
+        scrub: 1
+      }
+    });
+
+    function setupCopyEmail(btnId) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText("xxinzhang2026@163.com").then(() => {
+          const originalText = btn.querySelector('span').innerText;
+          btn.querySelector('span').innerText = "已复制";
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.querySelector('span').innerText = originalText;
+            btn.classList.remove('copied');
+          }, 1500);
+        });
+      });
+    }
+    setupCopyEmail('btnCopyEmail');
+    setupCopyEmail('btnCopyEmail2');
+
+    document.getElementById('btnBackToTop').addEventListener('click', () => {
+      lenis.scrollTo(0, { duration: 1.2 });
+    });
+
+    /**
+     * Section Animations
+     */
+    document.querySelectorAll('section').forEach(sec => {
+      if (sec.id === 'hero') return;
+      const header = sec.querySelector('.section-header');
+      const items = sec.querySelectorAll('.exp-card, .photo-card, .skill-card, .edu-card, .contact-box');
+
+      if (header) {
+        gsap.from(header, {
+          opacity: 0,
+          y: 20,
+          duration: 0.8,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: sec,
+            start: "top 80%"
+          }
+        });
+      }
+
+      if (items.length > 0) {
+        gsap.from(items, {
+          opacity: 0,
+          y: 24,
+          duration: 0.8,
+          stagger: 0.08,
+          delay: 0.1,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: sec,
+            start: "top 75%"
+          }
+        });
+      }
+    });
+
+    const photoImages = document.querySelectorAll('.photo-img');
+    const photoObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, idx) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('loaded');
+          }, idx * 150);
+          photoObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    photoImages.forEach(img => photoObserver.observe(img));
+
+    if (window.matchMedia("(min-width: 1024px)").matches) {
+      document.querySelectorAll('.photo-card').forEach(card => {
+        const img = card.querySelector('.photo-img');
+        gsap.to(img, {
+          y: -20,
+          ease: "none",
+          scrollTrigger: {
+            trigger: card,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+      });
+    }
+
+    /**
+     * Horizontal Experience Modal Carousel
+     */
+    const expModal = document.getElementById('expModal');
+    const modalTrack = document.getElementById('modalTrack');
+    const modalCompany = document.getElementById('modalCompany');
+    const modalRole = document.getElementById('modalRole');
+    const modalPageNum = document.getElementById('modalPageNum');
+    const modalPrevBtn = document.getElementById('modalPrevBtn');
+    const modalNextBtn = document.getElementById('modalNextBtn');
+    const modalDots = document.querySelectorAll('#modalDots .modal-dot');
+
+    let currentExpIndex = 0;
+    let currentSlide = 0;
+
+    document.querySelectorAll('.exp-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const expIdx = parseInt(card.getAttribute('data-exp'), 10);
+        openExperienceModal(expIdx);
+      });
+    });
+
+    function openExperienceModal(expIdx) {
+      currentExpIndex = expIdx;
+      currentSlide = 0;
+      const data = experiencesData[expIdx];
+
+      modalCompany.innerText = data.company;
+      modalRole.innerText = data.role;
+
+      renderSlide1(data.slides.bento);
+      renderSlide2(data.slides.cases);
+      renderSlide3(data.slides.chart);
+      renderSlide4(data.slides.sop);
+
+      updateCarouselPosition();
+      expModal.classList.add('active');
+      expModal.setAttribute('aria-hidden', 'false');
+      lenis.stop();
+
+      animateBentoNumbers();
+    }
+
+    function closeExperienceModal() {
+      expModal.classList.remove('active');
+      expModal.setAttribute('aria-hidden', 'true');
+      lenis.start();
+    }
+
+    document.getElementById('modalCloseBtn').addEventListener('click', closeExperienceModal);
+    expModal.addEventListener('click', (e) => {
+      if (e.target === expModal) closeExperienceModal();
+    });
+
+    function updateCarouselPosition() {
+      modalTrack.style.transform = `translate3d(-${currentSlide * 25}%, 0, 0)`;
+      modalPageNum.innerText = `0${currentSlide + 1} / 04`;
+
+      modalDots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === currentSlide);
+      });
+
+      modalPrevBtn.disabled = currentSlide === 0;
+      modalNextBtn.disabled = currentSlide === 3;
+    }
+
+    modalPrevBtn.addEventListener('click', () => {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateCarouselPosition();
+      }
+    });
+
+    modalNextBtn.addEventListener('click', () => {
+      if (currentSlide < 3) {
+        currentSlide++;
+        updateCarouselPosition();
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (!expModal.classList.contains('active')) return;
+      if (e.key === 'Escape') closeExperienceModal();
+      if (e.key === 'ArrowRight' && currentSlide < 3) {
+        currentSlide++;
+        updateCarouselPosition();
+      }
+      if (e.key === 'ArrowLeft' && currentSlide > 0) {
+        currentSlide--;
+        updateCarouselPosition();
+      }
+    });
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+    expModal.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    expModal.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchStartX - touchEndX > 50 && currentSlide < 3) {
+        currentSlide++;
+        updateCarouselPosition();
+      } else if (touchEndX - touchStartX > 50 && currentSlide > 0) {
+        currentSlide--;
+        updateCarouselPosition();
+      }
+    }, { passive: true });
+
+    function renderSlide1(bentoData) {
+      const container = document.getElementById('slide1');
+      container.innerHTML = `
+        <div class="slide-heading">核心量化指标</div>
+        <div class="bento-grid">
+          ${bentoData.map(item => `
+            <div class="bento-card ${item.col || ''}">
+              <div class="bento-label">${item.label}</div>
+              <div class="bento-num-wrap">
+                <span class="bento-num" data-target="${item.num}">${item.num}</span>
+                <span class="bento-unit">${item.unit}</span>
+              </div>
+              <div class="bento-desc">${item.desc}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function animateBentoNumbers() {
+      const nums = document.querySelectorAll('#slide1 .bento-num');
+      nums.forEach(el => {
+        const target = parseFloat(el.getAttribute('data-target'));
+        const isDecimal = target % 1 !== 0;
+        gsap.fromTo(el, 
+          { innerText: 0 },
+          {
+            innerText: target,
+            duration: 1.2,
+            ease: "power2.out",
+            snap: { innerText: isDecimal ? 0.1 : 1 }
+          }
+        );
+      });
+    }
+
+    function renderSlide2(cases) {
+      const container = document.getElementById('slide2');
+      container.innerHTML = `
+        <div class="slide-heading">代表案例与输出</div>
+        <div class="cases-row">
+          ${cases.map(c => `
+            <div class="case-card">
+              <div>
+                <span class="case-badge">${c.platform}</span>
+                <h4 class="case-name">${c.name}</h4>
+                <p class="case-detail">${c.desc}</p>
+              </div>
+              ${c.link && c.link !== '#' ? `
+                <a href="${c.link}" target="_blank" rel="noopener noreferrer" class="case-btn">
+                  <span>在 TikTok 打开 ↗</span>
+                </a>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderSlide3(chart) {
+      const container = document.getElementById('slide3');
+      container.innerHTML = `
+        <div class="slide-heading">${chart.title}</div>
+        <div class="chart-container">
+          <div class="chart-box">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px;">
+              <div>
+                <span style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase;">增长对比</span>
+                <div style="font-family: var(--font-num); font-size: 1.75rem; font-weight: 700; color: var(--primary);">
+                  ${chart.stat1} → ${chart.stat2}
+                </div>
+              </div>
+              <div style="font-size: 1.5rem; color: var(--primary);">↑</div>
+            </div>
+
+            <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.8125rem;">
+                <span>前期初始阶段</span>
+                <span style="font-weight: 700;">${chart.stat1}</span>
+              </div>
+              <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden;">
+                <div style="width: 50%; height: 100%; background: var(--text-light); border-radius: 4px;"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-top: 8px;">
+                <span style="color: var(--primary); font-weight: 600;">优化爆发阶段</span>
+                <span style="font-weight: 700; color: var(--primary);">${chart.stat2} ↑</span>
+              </div>
+              <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden;">
+                <div style="width: 85%; height: 100%; background: var(--primary); border-radius: 4px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-actions">
+            ${chart.actions.map(act => `
+              <div class="action-item">
+                <div class="action-title">${act.title}</div>
+                <div class="action-desc">${act.desc}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSlide4(sop) {
+      const container = document.getElementById('slide4');
+      if (sop.gantt) {
+        container.innerHTML = `
+          <div class="slide-heading">${sop.title}</div>
+          <div class="gantt-container">
+            ${sop.gantt.map(g => `
+              <div class="gantt-row">
+                <div class="gantt-role-label">${g.role}</div>
+                <div class="gantt-bars">
+                  ${g.bars.map(b => `
+                    <div class="gantt-bar-item">
+                      <span>${b}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="slide-heading">${sop.title}</div>
+          <div class="gantt-container">
+            ${sop.items.map(item => `
+              <div class="gantt-row">
+                <div class="gantt-role-label">${item.role}</div>
+                <div class="gantt-bars">
+                  <div class="gantt-bar-item">
+                    <span>${item.task}</span>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * Lightbox
+     */
+    const lightboxModal = document.getElementById('lightboxModal');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxTitle = document.getElementById('lightboxTitle');
+    const lightboxLoc = document.getElementById('lightboxLoc');
+
+    document.querySelectorAll('.photo-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const idx = parseInt(card.getAttribute('data-photo-idx'), 10);
+        const data = photoData[idx];
+        lightboxImg.src = data.src;
+        lightboxImg.alt = data.title;
+        lightboxTitle.innerText = data.title;
+        lightboxLoc.innerText = data.loc;
+        lightboxModal.classList.add('active');
+        lightboxModal.setAttribute('aria-hidden', 'false');
+        lenis.stop();
+      });
+    });
+
+    function closeLightbox() {
+      lightboxModal.classList.remove('active');
+      lightboxModal.setAttribute('aria-hidden', 'true');
+      lenis.start();
+    }
+
+    document.getElementById('lightboxCloseBtn').addEventListener('click', closeLightbox);
+    lightboxModal.addEventListener('click', (e) => {
+      if (e.target === lightboxModal) closeLightbox();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (lightboxModal.classList.contains('active') && e.key === 'Escape') {
+        closeLightbox();
+      }
+    });
+
+  </script>
+</body>
+</html>
